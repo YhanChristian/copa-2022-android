@@ -34,16 +34,3 @@ class MainActivity : ComponentActivity() {
         private const val TAG = "MainActivity"
     }
 }
-
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Composable
-@Preview(showBackground = true)
-fun DefaultPreview() {
-    Copa2022Theme {
-        Greeting("Android")
-    }
-}

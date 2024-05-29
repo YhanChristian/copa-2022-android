@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.dio.copa.catar.core.BaseViewModel
-import me.dio.copa.catar.domain.model.Match
 import me.dio.copa.catar.domain.model.MatchDomain
 import me.dio.copa.catar.domain.usecase.DisableNotificationUseCase
 import me.dio.copa.catar.domain.usecase.EnableNotificationUseCase
@@ -18,12 +17,13 @@ import me.dio.copa.catar.remote.UnexpectedException
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class MainViewModel @Inject constructor
+    (
     private val getMatchesUseCase: GetMatchesUseCase,
-    private val disableNotificationUseCase: DisableNotificationUseCase,
     private val enableNotificationUseCase: EnableNotificationUseCase,
-) : BaseViewModel<MainUiState, MainUiAction>(MainUiState()) {
-
+    private val disableNotificationUseCase: DisableNotificationUseCase
+) :
+    BaseViewModel<MainUiState, MainUiAction>(MainUiState()) {
     init {
         fetchMatches()
     }
@@ -32,20 +32,23 @@ class MainViewModel @Inject constructor(
         getMatchesUseCase()
             .flowOn(Dispatchers.Main)
             .catch {
-                when(it) {
-                    is NotFoundException ->
+                when (it) {
+                    is NotFoundException -> {
                         sendAction(MainUiAction.MatchesNotFound(it.message ?: "Erro sem mensagem"))
-                    is UnexpectedException ->
-                        sendAction(MainUiAction.Unexpected)
+                    }
+
+                    is UnexpectedException -> {
+                        sendAction(MainUiAction.UnexpectedError)
+                    }
                 }
             }.collect { matches ->
                 setState {
-                    copy(matches = matches)
+                    copy(matches)
                 }
             }
     }
 
-    fun toggleNotification(match: Match) {
+    fun toggleNotification(match: MatchDomain) {
         viewModelScope.launch {
             runCatching {
                 withContext(Dispatchers.Main) {
@@ -56,7 +59,6 @@ class MainViewModel @Inject constructor(
                         enableNotificationUseCase(match.id)
                         MainUiAction.EnableNotification(match)
                     }
-
                     sendAction(action)
                 }
             }
@@ -64,13 +66,13 @@ class MainViewModel @Inject constructor(
     }
 }
 
-data class MainUiState(
-    val matches: List<MatchDomain> = emptyList()
-)
+    data class MainUiState(
+        val matches: List<MatchDomain> = emptyList()
+    )
 
-sealed interface MainUiAction {
-    object Unexpected: MainUiAction
-    data class MatchesNotFound(val message: String) : MainUiAction
-    data class EnableNotification(val match: MatchDomain) : MainUiAction
-    data class DisableNotification(val match: MatchDomain) : MainUiAction
-}
+    sealed interface MainUiAction {
+        data class MatchesNotFound(val message: String) : MainUiAction
+        data class EnableNotification(val match: MatchDomain) : MainUiAction
+        data class DisableNotification(val match: MatchDomain) : MainUiAction
+        object UnexpectedError : MainUiAction
+    }

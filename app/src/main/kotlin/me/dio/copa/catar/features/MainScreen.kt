@@ -1,7 +1,9 @@
 package me.dio.copa.catar.features
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,8 +24,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import me.dio.copa.catar.R
@@ -32,6 +37,7 @@ import me.dio.copa.catar.domain.model.MatchDomain
 import me.dio.copa.catar.domain.model.TeamDomain
 import me.dio.copa.catar.ui.theme.Shapes
 
+
 typealias NotificationOnClick = (match: MatchDomain) -> Unit
 
 @Composable
@@ -39,8 +45,8 @@ fun MainScreen(matches: List<MatchDomain>, onNotificationClick: NotificationOnCl
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp)
-    ) {
+            .background(colorResource(R.color.world_cup))
+            ) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(matches) { match ->
                 MatchInfo(match, onNotificationClick)
@@ -53,7 +59,9 @@ fun MainScreen(matches: List<MatchDomain>, onNotificationClick: NotificationOnCl
 fun MatchInfo(match: MatchDomain, onNotificationClick: NotificationOnClick) {
     Card(
         shape = Shapes.large,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
     ) {
         Box {
             AsyncImage(
@@ -74,16 +82,18 @@ fun MatchInfo(match: MatchDomain, onNotificationClick: NotificationOnClick) {
 
 @Composable
 fun Notification(match: MatchDomain, onClick: NotificationOnClick) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-        val drawable = if (match.notificationEnabled) R.drawable.ic_notifications_active
-        else R.drawable.ic_notifications
-
+    val drawable = if (match.notificationEnabled) R.drawable.ic_notifications_active
+    else R.drawable.ic_notifications
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End
+    ) {
         Image(
             painter = painterResource(id = drawable),
+            contentDescription = null,
             modifier = Modifier.clickable {
                 onClick(match)
-            },
-            contentDescription = null
+            }
         )
     }
 }
@@ -106,16 +116,14 @@ fun Teams(match: MatchDomain) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         TeamItem(team = match.team1)
-
         Text(
-            text = "X",
+            text = "x",
             modifier = Modifier.padding(end = 16.dp, start = 16.dp),
             style = MaterialTheme.typography.h6.copy(color = Color.White)
         )
-
         TeamItem(team = match.team2)
     }
 }
@@ -125,16 +133,23 @@ fun TeamItem(team: TeamDomain) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = team.flag,
-            modifier = Modifier.align(Alignment.CenterVertically),
+            modifier = Modifier
+                .align(Alignment.CenterVertically),
             style = MaterialTheme.typography.h3.copy(color = Color.White)
         )
-
-        Spacer(modifier = Modifier.size(16.dp))
-
+    }
+    Spacer(modifier = Modifier.size(16.dp))
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = team.displayName,
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.h6.copy(color = Color.White)
         )
     }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun MainScreenPreview() {
+    MainScreen(matches = listOf(), onNotificationClick = {})
 }
